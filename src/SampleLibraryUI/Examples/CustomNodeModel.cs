@@ -10,6 +10,7 @@ using ProtoCore.AST.AssociativeAST;
 using SampleLibraryUI.Controls;
 using SampleLibraryUI.Properties;
 using SampleLibraryZeroTouch;
+using Dynamo.Nodes;
 
 namespace SampleLibraryUI.Examples
 {
@@ -34,48 +35,31 @@ namespace SampleLibraryUI.Examples
 
     // The NodeName attribute is what will display on 
     // top of the node in Dynamo
-    [NodeName("Custom Node Model")]
+    [NodeName("HydraSaveGraph")]
 
     // The NodeCategory attribute determines how your
     // node will be organized in the library. You can
     // specify your own category or use one of the 
     // built-ins provided in BuiltInNodeCategories.
-    [NodeCategory("SampleLibraryUI.Examples")]
+    [NodeCategory("Hydra")]
 
     // The description will display in the tooltip
     // and in the help window for the node.
-    [NodeDescription("CustomNodeModelDescription",typeof(SampleLibraryUI.Properties.Resources))]
+    [NodeDescription("A sample node to help out the Hydra team save a dynamo graph from a node")]
 
     // Add the IsDesignScriptCompatible attribute to ensure
     // that it gets loaded in Dynamo.
     [IsDesignScriptCompatible]
-    public class CustomNodeModel : NodeModel
+    public class HydraSaveGraph : NodeModel
     {
-        #region private members
-
         private string message;
-        private double awesome;
+        
+        public Action RequestSave;
 
-        #endregion
 
         #region properties
 
-        /// <summary>
-        /// A value that will be bound to our
-        /// custom UI's awesome slider.
-        /// </summary>
-        public double Awesome
-        {
-            get { return awesome; }
-            set
-            {
-                awesome = value;
-                RaisePropertyChanged("Awesome");
-
-                OnNodeModified();
-            }
-        }
-
+      
         /// <summary>
         /// A message that will appear on the button
         /// on our node.
@@ -110,18 +94,10 @@ namespace SampleLibraryUI.Examples
         /// the input and output ports and specify the argument
         /// lacing.
         /// </summary>
-        public CustomNodeModel()
+        public HydraSaveGraph()
         {
-            // When you create a UI node, you need to do the
-            // work of setting up the ports yourself. To do this,
-            // you can populate the InPortData and the OutPortData
-            // collections with PortData objects describing your ports.
-            InPortData.Add(new PortData("something", Resources.CustomNodeModePortDataInputToolTip));
-
-            // Nodes can have an arbitrary number of inputs and outputs.
-            // If you want more ports, just create more PortData objects.
-            OutPortData.Add(new PortData("something", Resources.CustomNodeModePortDataOutputToolTip));
-            OutPortData.Add(new PortData("some awesome", Resources.CustomNodeModePortDataOutputToolTip));
+            
+            InPortData.Add(new PortData("file path", "for now we'll just save to this filepath"));
 
             // This call is required to ensure that your ports are
             // properly created.
@@ -130,7 +106,7 @@ namespace SampleLibraryUI.Examples
             // The arugment lacing is the way in which Dynamo handles
             // inputs of lists. If you don't want your node to
             // support argument lacing, you can set this to LacingStrategy.Disabled.
-            ArgumentLacing = LacingStrategy.CrossProduct;
+            ArgumentLacing = LacingStrategy.Disabled;
 
             // We create a DelegateCommand object which will be 
             // bound to our button in our custom UI. Clicking the button 
@@ -140,70 +116,7 @@ namespace SampleLibraryUI.Examples
             // Setting our property here will trigger a 
             // property change notification and the UI 
             // will be updated to reflect the new value.
-            Message = "Say 'Hello Dynamo!'";
-
-            Awesome = 1;
-        }
-
-        #endregion
-
-        #region public methods
-
-        /// <summary>
-        /// If this method is not overriden, Dynamo will, by default
-        /// pass data through this node. But we wouldn't be here if
-        /// we just wanted to pass data through the node, so let's 
-        /// try using the data.
-        /// </summary>
-        /// <param name="inputAstNodes"></param>
-        /// <returns></returns>
-        [IsVisibleInDynamoLibrary(false)]
-        public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
-        {
-            // When you create your own UI node you are responsible
-            // for generating the abstract syntax tree (AST) nodes which
-            // specify what methods are called, or how your data is passed
-            // when execution occurs.
-
-            // WARNING!!!
-            // Do not throw an exception during AST creation. If you
-            // need to convey a failure of this node, then use
-            // AstFactory.BuildNullNode to pass out null.
-
-            // We create a DoubleNode to wrap the value 'awesome' that
-            // we've stored in a private member.
-
-            var doubleNode = AstFactory.BuildDoubleNode(awesome);
-
-            // A FunctionCallNode can be used to represent the calling of a 
-            // function in the AST. The method specified here must live in 
-            // a separate assembly and have been loaded by Dynamo at the time 
-            // that this AST is built. If the method can't be found, you'll get 
-            // a "De-referencing a non-pointer warning."
-
-            var funcNode = AstFactory.BuildFunctionCall(
-                new Func<double,double>(SampleUtilities.MultiplyInputByNumber), 
-                new List<AssociativeNode>(){doubleNode});
-
-            // Using the AstFactory class, we can build AstNode objects
-            // that assign doubles, assign function calls, build expression lists, etc.
-            return new[]
-            {
-                // In these assignments, GetAstIdentifierForOutputIndex finds 
-                // the unique identifier which represents an output on this node
-                // and 'assigns' that variable the expression that you create.
-                
-                // For the first node, we'll just pass through the 
-                // input provided to this node.
-                AstFactory.BuildAssignment(
-                    GetAstIdentifierForOutputIndex(0), funcNode),
-
-                // For the second node, we'll build a double node that 
-                // passes along our value for awesome.
-                AstFactory.BuildAssignment(
-                    GetAstIdentifierForOutputIndex(1),
-                    AstFactory.BuildDoubleNode(awesome))
-            };
+            Message = "click to save the graph";
         }
 
         #endregion
@@ -212,14 +125,15 @@ namespace SampleLibraryUI.Examples
 
         private static bool CanShowMessage(object obj)
         {
-            // I can't think of any reason you wouldn't want to say Hello Dynamo!
-            // so I'll just return true.
+           
             return true;
         }
 
-        private static void ShowMessage(object obj)
+        private void ShowMessage(object obj)
         {
-            MessageBox.Show("Hello Dynamo!");
+          //here is where the button command will be called, we can raise another event here
+            //that will raise something inside NodeViewCustomization...
+           this.RequestSave();
         }
 
         #endregion
@@ -228,7 +142,7 @@ namespace SampleLibraryUI.Examples
     /// <summary>
     ///     View customizer for CustomNodeModel Node Model.
     /// </summary>
-    public class CustomNodeModelNodeViewCustomization : INodeViewCustomization<CustomNodeModel>
+    public class CustomNodeModelNodeViewCustomization : INodeViewCustomization<HydraSaveGraph>
     {
         /// <summary>
         /// At run-time, this method is called during the node 
@@ -239,24 +153,41 @@ namespace SampleLibraryUI.Examples
         /// </summary>
         /// <param name="model">The NodeModel representing the node's core logic.</param>
         /// <param name="nodeView">The NodeView representing the node in the graph.</param>
-        public void CustomizeView(CustomNodeModel model, NodeView nodeView)
+        public void CustomizeView(HydraSaveGraph model, NodeView nodeView)
         {
+
+
             // The view variable is a reference to the node's view.
             // In the middle of the node is a grid called the InputGrid.
             // We reccommend putting your custom UI in this grid, as it has
             // been designed for this purpose.
-
+            
             // Create an instance of our custom UI class (defined in xaml),
             // and put it into the input grid.
             var helloDynamoControl = new HelloDynamoControl();
             nodeView.inputGrid.Children.Add(helloDynamoControl);
-
+            
             // Set the data context for our control to be this class.
             // Properties in this class which are data bound will raise 
             // property change notifications which will update the UI.
             helloDynamoControl.DataContext = model;
+            model.RequestSave += () => saveGraph(model,nodeView);
         }
 
+        public void saveGraph(NodeModel model ,NodeView nodeView)
+    {
+        var graph = nodeView.ViewModel.DynamoViewModel.Model.CurrentWorkspace;
+
+                var pathnode = model.InPorts[0].Connectors[0].Start.Owner;
+                var colorsIndex = model.InPorts[0].Connectors[0].Start.Index;
+                var startId = pathnode.GetAstIdentifierForOutputIndex(colorsIndex).Name;
+                var pathMirror = nodeView.ViewModel.DynamoViewModel.Model.EngineController.GetMirror(startId);
+                var path =pathMirror.GetData().Data as string;
+
+
+                graph.SaveAs(path, nodeView.ViewModel.DynamoViewModel.Model.EngineController.LiveRunnerRuntimeCore);
+
+    }
         /// <summary>
         /// Here you can do any cleanup you require if you've assigned callbacks for particular 
         /// UI events on your node.

@@ -10,11 +10,7 @@
             <Button Command="{Binding MessageCommand}" Height="60" Margin="5" Background="LightGreen" >
                 <TextBlock Text="{Binding Message}"></TextBlock>
             </Button>
-            <Slider Margin="5" Minimum="0" Maximum="11" Value="{Binding Awesome, Mode=TwoWay}">
-                <Slider.ToolTip>
-                    <TextBlock Text="Slide this to crank up the awesome."></TextBlock>
-                </Slider.ToolTip>
-            </Slider>
+          
         </StackPanel>
     </Grid>
 </UserControl>
