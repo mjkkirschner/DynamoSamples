@@ -50,12 +50,14 @@ namespace SampleLibraryUI.Examples
     // Add the IsDesignScriptCompatible attribute to ensure
     // that it gets loaded in Dynamo.
     [IsDesignScriptCompatible]
+    [IsVisibleInDynamoLibrary(true)]
     public class HydraSaveGraph : NodeModel
     {
         private string message;
         
         public Action RequestSave;
 
+        public string path;
 
         #region properties
 
@@ -96,9 +98,9 @@ namespace SampleLibraryUI.Examples
         /// </summary>
         public HydraSaveGraph()
         {
-            
-            InPortData.Add(new PortData("file path", "for now we'll just save to this filepath"));
 
+            //InPortData.Add(new PortData("file path", "for now we'll just save to this filepath"));
+            OutPortData.Add(new PortData("file path","the current filepath"));
             // This call is required to ensure that your ports are
             // properly created.
             RegisterAllPorts();
@@ -136,6 +138,13 @@ namespace SampleLibraryUI.Examples
            this.RequestSave();
         }
 
+        public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
+        {
+            //we want to set the output port to the value of something on this nodemodel.... possible?
+           var output = AstFactory.BuildAssignment(this.AstIdentifierForPreview, AstFactory.BuildStringNode(path));
+            return new List<AssociativeNode>() { output };
+        }
+
         #endregion
     }
 
@@ -171,7 +180,13 @@ namespace SampleLibraryUI.Examples
             // Properties in this class which are data bound will raise 
             // property change notifications which will update the UI.
             helloDynamoControl.DataContext = model;
-            model.RequestSave += () => saveGraph(model,nodeView);
+            //model.RequestSave += () => saveGraph(model,nodeView);
+            nodeView.ViewModel.DynamoViewModel.Model.WorkspaceSaved += (wkrmodel) => Model_WorkspaceSaved(wkrmodel, model);
+        }
+
+        private void Model_WorkspaceSaved(WorkspaceModel model,HydraSaveGraph Nodemodel)
+        {
+            Nodemodel.path = model.FileName;
         }
 
         public void saveGraph(NodeModel model ,NodeView nodeView)

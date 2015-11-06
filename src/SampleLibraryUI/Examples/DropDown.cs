@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using DSCoreNodesUI;
 using Dynamo.Models;
+using Dynamo.Nodes;
 using Dynamo.Utilities;
 using ProtoCore.AST.AssociativeAST;
 
@@ -33,7 +34,7 @@ namespace SampleLibraryUI.Examples
                 new DynamoDropDownItem("Hodor",2)
             };
 
-            Items.AddRange(newItems);
+            newItems.ForEach(x => Items.Add(x));
 
             // Set the selected index to something other
             // than -1, the default, so that your list
