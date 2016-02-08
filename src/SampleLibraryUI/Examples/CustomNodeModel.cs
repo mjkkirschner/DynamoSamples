@@ -255,6 +255,9 @@ namespace SampleLibraryUI.Examples
             // Properties in this class which are data bound will raise 
             // property change notifications which will update the UI.
             helloDynamoControl.DataContext = model;
+
+            var cameraInfo = (nodeView.ViewModel.DynamoViewModel.BackgroundPreviewViewModel as Dynamo.Wpf.ViewModels.Watch3D.HelixWatch3DViewModel).Camera;
+
         }
 
         /// <summary>
