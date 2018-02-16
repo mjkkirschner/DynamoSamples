@@ -1,0 +1,4 @@
+﻿<ViewExtensionDefinition>
+  <AssemblyPath>..\NodeUISampleViewExtension.dll</AssemblyPath>
+  <TypeName>NodeUISampleViewExtension.NodeUISampleViewExtension</TypeName>
+</ViewExtensionDefinition>
