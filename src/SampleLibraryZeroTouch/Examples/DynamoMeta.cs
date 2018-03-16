@@ -16,6 +16,14 @@ using Newtonsoft.Json;
 using System.Threading;
 using Dynamo.Scheduler;
 using Dynamo.Interfaces;
+using System.Reflection;
+using System.Windows;
+using ProtoCore.Mirror;
+using Dynamo.Graph;
+using System.Xml;
+using Dynamo.Migration;
+using Dynamo.Controls;
+using System.Windows.Media;
 
 namespace Dynamo.Meta
 {
@@ -98,12 +106,18 @@ namespace Dynamo.Meta
             {
                 GeometryFactoryPath = geometryFactoryPath,
                 ProcessMode = TaskProcessMode.Synchronous,
-                IsHeadless = true
+                IsHeadless = true,
+                //TODO to stop backup timer, maybe use test mode or just set time to 0;
+                //before the model is created.
+                StartInTestMode = true,
+               
             };
 
             config.UpdateManager = null;
             config.StartInTestMode = true;
             config.PathResolver = new DynamoEnginePathResolver(preloaderLocation);
+            config.Context = "DynamoMeta";
+            
 
             var model = DynamoModel.Start(config);
             return model;
@@ -118,25 +132,14 @@ namespace Dynamo.Meta
                     ? guid
                     : Path.ChangeExtension(guid, fileExtension));
         }
-        public static WorkspaceModel openWorkspace(string path)
+        public static WorkspaceModel openWorkspace(DynamoViewModel vm,string path)
         {
-
-            var model = makeSyncModel();
-
-            var viewModel = DynamoViewModel.Start(
-                new DynamoViewModel.StartConfiguration()
-                {
-                    DynamoModel = model
-                });
-            viewModel.OpenCommand.Execute(path);
-            //TODO seems we need to do this or later runs will be missing their engine?..somehow attaching to this.
-            //viewModel.PerformShutdownSequence(new ShutdownParams(false, false));
-            var output = model.CurrentWorkspace;
+            vm.OpenCommand.Execute(path);
+            var output = vm.Model.CurrentWorkspace;
             return output;
-
         }
 
-        public static string convertToJson(WorkspaceModel ws)
+        public static DynamoViewModel createDynamoEngine()
         {
             var model = makeSyncModel();
 
@@ -145,17 +148,38 @@ namespace Dynamo.Meta
                 {
                     DynamoModel = model
                 });
-            //TODO gather any notifications or messages this command logs? Like unresolved nodes or other conversion failures.
+            //set the dispatcher of this viewModel to the current UI dispatcher so we don't crash.
+            var dispatcherSetter = typeof(DynamoViewModel).
+                GetProperty("UIDispatcher",BindingFlags.Instance | BindingFlags.NonPublic).SetMethod;
+            dispatcherSetter.Invoke(viewModel, new object[] { Application.Current.Dispatcher });
 
-            model.AddWorkspace(ws);
-            model.CurrentWorkspace = ws;
-            viewModel.CurrentWorkspaceIndex = 0;
+            return viewModel;
+        }
+
+
+        public static DynamoViewModel getCurrenDynamoEngine()
+        {
+            return Application.Current.Dispatcher.Invoke(new Func<DynamoViewModel>(() =>
+            {
+                var results = Application.Current.Windows.Cast<Window>().OfType<DynamoView>();
+                var window = results.FirstOrDefault();
+                if (window != null)
+                {
+                    return window.DataContext as DynamoViewModel;
+                }
+                return null;
+            }));  
+        }
+
+        public static string saveToJson(DynamoViewModel dynamoEngine, string path)
+        {
+            dynamoEngine.OpenCommand.Execute(path);
             var savePath = GetNewFileNameOnTempPath();
-            viewModel.SaveAs(savePath);
-            viewModel.PerformShutdownSequence(new ShutdownParams(false, false));
+            dynamoEngine.SaveAs(savePath);
             var output = System.IO.File.ReadAllText(savePath);
             return output;
         }
+
         private static string GetStringRepOfCollection(ProtoCore.Mirror.MirrorData value)
         {
             var items = string.Join(",",
@@ -226,18 +250,69 @@ namespace Dynamo.Meta
             return resultsdict;
         }
 
-        public static string runWorkspace(WorkspaceModel ws)
+        private static List<object> gatherMirrorResults(DynamoModel model,WorkspaceModel ws)
+        {
+            var resultsdict = new Dictionary<string, object>();
+             foreach (var node in ws.Nodes)
+            {
+                var portvalues = new List<object>();
+                foreach (var port in node.OutPorts)
+                {
+                    var value = node.GetValue(port.Index, model.EngineController);
+                    if (value.IsCollection)
+                    {
+                        portvalues.Add(getMirrorDataFromCollection(value));
+                    }
+                    else if (value.IsDictionary)
+                    {
+                        portvalues.Add(getMirrorDataFromDictionary(value.Data));
+                    }
+                    else
+                    {
+                        portvalues.Add(value.Data);
+                    }
+                }
+
+                resultsdict.Add(node.GUID.ToString(), portvalues);
+            }
+            return resultsdict.Values.ToList();
+        }
+
+        private static IEnumerable<object> getMirrorDataFromCollection(MirrorData value)
         {
 
-            var model = makeSyncModel();
+            return value.GetElements().Select(x =>
+            {
+                if (x.IsCollection) return getMirrorDataFromCollection(x);
+                return x.IsDictionary ? getMirrorDataFromDictionary(x.Data) : x.Data;
+            });
+          
+        }
+
+        private static IDictionary<string,object> getMirrorDataFromDictionary(object value)
+        {
+            return (value as Dictionary).Components();
+        }
+
+        public static string runWorkspace(DynamoViewModel dynamoEngine, WorkspaceModel ws)
+        {
+            var model = dynamoEngine.Model;
             model.AddWorkspace(ws);
             model.CurrentWorkspace = ws;
             model.ForceRun();
-
-            //TODO attempt to return the results directly...
             var results = gatherResultsFromWorkspace(model, model.CurrentWorkspace);
 
             return JsonConvert.SerializeObject(results);
+        }
+        public static object runWorkspaceDangerous(DynamoViewModel dynamoEngine,WorkspaceModel ws)
+        {
+            var model = dynamoEngine.Model;
+            model.AddWorkspace(ws);
+            model.CurrentWorkspace = ws;
+            model.ForceRun();
+            //TODO this will only work if the nodes in the graph return lists of rank1.
+            return gatherMirrorResults(model, model.CurrentWorkspace);
+
         }
     }
 }

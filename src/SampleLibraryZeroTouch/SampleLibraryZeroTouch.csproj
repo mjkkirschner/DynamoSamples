@@ -129,6 +129,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
     <Reference Include="VMDataBridge, Version=2.0.1.4364, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DynamoVisualProgramming.Core.2.0.1-beta4364\lib\net45\VMDataBridge.dll</HintPath>
       <Private>True</Private>
