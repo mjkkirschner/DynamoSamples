@@ -214,71 +214,20 @@ namespace SampleLibraryUI.Examples
 
         #region public methods
 
-        /// <summary>
-        /// BuildOutputAst is where the outputs of this node are calculated.
-        /// This method is used to do the work that a compiler usually does 
-        /// by parsing the inputs List inputAstNodes into an abstract syntax tree.
-        /// </summary>
-        /// <param name="inputAstNodes"></param>
-        /// <returns></returns>
-        [IsVisibleInDynamoLibrary(false)]
+
         public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
         {
-            // When you create your own UI node you are responsible
-            // for generating the abstract syntax tree (AST) nodes which
-            // specify what methods are called, or how your data is passed
-            // when execution occurs.
+            string packedId = "__temp" + AstIdentifierGuid;
+            return new[] {
 
-            // WARNING!!!
-            // Do not throw an exception during AST creation. If you
-            // need to convey a failure of this node, then use
-            // AstFactory.BuildNullNode to pass out null.
+      AstFactory.BuildAssignment(AstFactory.BuildIdentifier(packedId), AstFactory.BuildFunctionCall(
+         new Func<string, List<object>>(SampleUtilities.GetObjects),
+         new List<AssociativeNode>() { inputAstNodes[0] } )),
 
-            // If inputs are not connected return null
-            if (!InPorts[0].Connectors.Any())
-            {
-                return new[] 
-                {
-                    AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), AstFactory.BuildNullNode()),
-                    AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(1), AstFactory.BuildNullNode()),
-                };
-            }
+      AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), new IdentifierNode(packedId) {
+         ArrayDimensions = new ArrayNode { Expr = AstFactory.BuildIntNode(0) } }),
 
-            // A FunctionCallNode can be used to represent the calling of a 
-            // function in the AST. The method specified here must live in 
-            // a separate assembly (in our case SampleUtilities) and have 
-            // been loaded by Dynamo at the time that this AST is built. 
-            // If the method can't be found, you'll get a "De-referencing a 
-            // non -pointer warning."
-
-            AssociativeNode buttonFuncNode =
-                AstFactory.BuildFunctionCall(
-                    new Func<string, string>(SampleUtilities.DescribeButtonMessage),
-                    new List<AssociativeNode> { inputAstNodes[0] });
-
-            AssociativeNode windowFuncNode =
-                AstFactory.BuildFunctionCall(
-                    new Func<string, string, string>(SampleUtilities.DescribeWindowMessage),
-                    new List<AssociativeNode> { AstFactory.BuildStringNode(GUID.ToString()), inputAstNodes[0] });
-
-            // Using the AstFactory class, we can build AstNode objects
-            // that assign doubles, assign function calls, build expression lists, etc.
-            return new[]
-            {
-                // In these assignments, GetAstIdentifierForOutputIndex finds 
-                // the unique identifier which represents an output on this node
-                // and 'assigns' that variable the expression that you create.
-
-                AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), buttonFuncNode),
-                    AstFactory.BuildAssignment(
-                        AstFactory.BuildIdentifier(AstIdentifierBase + "_dummy"),
-                        VMDataBridge.DataBridge.GenerateBridgeDataAst(GUID.ToString(), AstFactory.BuildExprList(inputAstNodes))),
-
-                AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(1), windowFuncNode),
-                    AstFactory.BuildAssignment(
-                        AstFactory.BuildIdentifier(AstIdentifierBase + "_dummy"),
-                        VMDataBridge.DataBridge.GenerateBridgeDataAst(GUID.ToString(), AstFactory.BuildExprList(inputAstNodes)))
-            };
+      AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(1), AstFactory.BuildBooleanNode(true))};
         }
 
         #endregion

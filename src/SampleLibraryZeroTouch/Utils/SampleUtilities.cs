@@ -1,4 +1,5 @@
 ﻿using Autodesk.DesignScript.Runtime;
+using System.Collections.Generic;
 
 namespace SampleLibraryZeroTouch
 {
@@ -24,6 +25,15 @@ namespace SampleLibraryZeroTouch
         public static string DescribeWindowMessage(string GUID, string input)
         {
             return "Window displays: Data bridge callback of node " + GUID.Substring(0, 5) + ": " + input;
+        }
+        [IsVisibleInDynamoLibrary(false)]
+        public static List<object> GetObjects(string s)
+        {
+            List<object> r = new List<object>();
+            
+            r.Add(new Dictionary<string, string>() { { "1", "A" }, { "2", "B" }, { "3", "C" } });
+
+            return r;
         }
     }
 }
