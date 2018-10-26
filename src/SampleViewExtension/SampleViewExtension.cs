@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using Dynamo.Models;
+using Dynamo.ViewModels;
 using Dynamo.Wpf.Extensions;
 
 namespace SampleViewExtension
@@ -57,6 +59,18 @@ namespace SampleViewExtension
                 window.Show();
             };
             p.AddMenuItem(MenuBarType.View, sampleMenuItem);
+            p.DynamoWindow.Dispatcher.BeginInvoke(new Action(() =>
+           {
+               //if (MessageBoxResult.OK == MessageBox.Show("ask to open", "do you want to open another file", MessageBoxButton.OKCancel))
+               //{
+                   var dynamoViewModel = (p.DynamoWindow.DataContext as DynamoViewModel);
+                   dynamoViewModel.OpenCommand.Execute(@"C:\Users\kirschm\Documents\Dynamo\doc\distrib\Samples\en-US\Geometry\Geometry_Points.dyn");
+                    // using the above viewModel command is used in order to work around a bug in this model command for opening files:
+                    // which would normally be used - seems workspaceViewModel is still null when this command is executed. will file a bug.
+                     //p.CommandExecutive.ExecuteCommand(new DynamoModel.OpenFileCommand(@"C:\Users\kirschm\Documents\Dynamo\doc\distrib\Samples\en-US\Geometry\Geometry_Points.dyn",true),this.UniqueId,"SampleExtension");
+                //}
+           }));
+            
         }
 
         public void Shutdown()
