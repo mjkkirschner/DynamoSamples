@@ -1,7 +1,8 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Controls;
+﻿using Dynamo.Graph.Workspaces;
+using Dynamo.ViewModels;
 using Dynamo.Wpf.Extensions;
+using System;
+using System.Windows.Controls;
 
 namespace SampleViewExtension
 {
@@ -40,6 +41,7 @@ namespace SampleViewExtension
             sampleMenuItem = new MenuItem {Header = "Show View Extension Sample Window"};
             sampleMenuItem.Click += (sender, args) =>
             {
+                (p.DynamoWindow.DataContext as DynamoViewModel).EngineController.EnableProfiling(true, p.CurrentWorkspaceModel as HomeWorkspaceModel, p.CurrentWorkspaceModel.Nodes);
                 var viewModel = new SampleWindowViewModel(p);
                 var window = new SampleWindow
                 {
