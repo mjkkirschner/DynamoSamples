@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
             Width="500" Height="100">
-    <Grid Name="MainGrid" 
+    <StackPanel Name="MainPanel" 
           HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
         <TextBlock HorizontalAlignment="Stretch" Text="{Binding ActiveNodeTypes}"
@@ -17,5 +17,5 @@
                    FontSize="18"
                    Background="#2d2d2d"
                    Foreground="White"/>
-    </Grid>
+    </StackPanel>
 </Window>

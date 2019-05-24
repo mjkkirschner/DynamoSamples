@@ -28,8 +28,7 @@ namespace SampleViewExtension
         {
             string output = "Active nodes:\n";
 
-            (readyParams.DynamoWindow.DataContext as DynamoViewModel).EngineController.EnableProfiling(true, readyParams.CurrentWorkspaceModel as HomeWorkspaceModel, readyParams.CurrentWorkspaceModel.Nodes);
-
+           
             foreach (NodeModel node in readyParams.CurrentWorkspaceModel.Nodes)
             {
                 string nickName = node.Name;

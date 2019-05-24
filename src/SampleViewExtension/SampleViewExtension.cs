@@ -46,7 +46,7 @@ namespace SampleViewExtension
                 var window = new SampleWindow
                 {
                     // Set the data context for the main grid in the window.
-                    MainGrid = { DataContext = viewModel },
+                    MainPanel = { DataContext = viewModel },
 
                     // Set the owner of the window to the Dynamo window.
                     Owner = p.DynamoWindow
@@ -55,6 +55,13 @@ namespace SampleViewExtension
                 window.Left = window.Owner.Left + 400;
                 window.Top = window.Owner.Top + 200;
 
+                var button = new Button();
+                button.Content = "Mark Nodes For ReExecution";
+                button.Click += (s, e) =>
+                {
+                    (p.DynamoWindow.DataContext as DynamoViewModel).EngineController.EnableProfiling(true, p.CurrentWorkspaceModel as HomeWorkspaceModel, p.CurrentWorkspaceModel.Nodes);
+                };
+                window.MainPanel.Children.Add(button);
                 // Show a modeless window.
                 window.Show();
             };
