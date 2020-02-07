@@ -1,4 +1,7 @@
-﻿using Autodesk.DesignScript.Runtime;
+﻿using System;
+using System.Linq;
+using Autodesk.DesignScript.Geometry;
+using Autodesk.DesignScript.Runtime;
 
 namespace SampleLibraryZeroTouch
 {
@@ -24,6 +27,20 @@ namespace SampleLibraryZeroTouch
         public static string DescribeWindowMessage(string GUID, string input)
         {
             return "Window displays: Data bridge callback of node " + GUID.Substring(0, 5) + ": " + input;
+        }
+
+        [IsVisibleInDynamoLibrary(false)]
+        public static Geometry[] GenerateSomeGeom(string path)
+        {
+            //return Autodesk.DesignScript.Geometry.Geometry.ImportFromSAT(path);
+
+            //For now just going to geneate some spheres. Let's pretend they came from sat import above.
+            //I would also usually call dispose on the points, since we dont return them - though this should now be safe in dynamo 2.5
+            //use random numbers so we can tell when the node is re-executed.
+            var randomNum = new Random().Next(1, 30);
+            var randomRadius = new Random().NextDouble() * 3.0;
+            return Enumerable.Range(0, randomNum).Select(x => Point.ByCoordinates(x, x, x)).Select(pt => Sphere.ByCenterPointRadius(pt, randomRadius)).ToArray();
+
         }
     }
 }
