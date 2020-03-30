@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Autodesk.DesignScript.Geometry;
 using Autodesk.DesignScript.Runtime;
@@ -41,6 +42,13 @@ namespace SampleLibraryZeroTouch
             var randomRadius = new Random().NextDouble() * 3.0;
             return Enumerable.Range(0, randomNum).Select(x => Point.ByCoordinates(x, x, x)).Select(pt => Sphere.ByCenterPointRadius(pt, randomRadius)).ToArray();
 
+        }
+
+        public static Geometry[] InspectGeometry(Geometry[] geometries, string guid)
+        {
+            Debug.WriteLine($"there were {geometries.Count()} geomery objects passed to this function");
+            Debug.WriteLine($"this node has id {guid}");
+            return geometries;
         }
     }
 }
