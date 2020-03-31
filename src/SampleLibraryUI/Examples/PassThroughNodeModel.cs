@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
 using SampleLibraryZeroTouch;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -64,9 +65,8 @@ namespace SampleLibraryUI.Examples
 
             AssociativeNode inspectGeomFunctionPointer =
                 AstFactory.BuildFunctionCall(
-                    new Func<Geometry[], string, Geometry[]>(SampleUtilities.InspectGeometry), inputs);
+                    new Func<IList, string, IList>(SampleUtilities.InspectGeometry), inputs);
 
-            //h
             return new[]
             {
                 AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), inspectGeomFunctionPointer),

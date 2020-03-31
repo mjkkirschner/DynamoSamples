@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Autodesk.DesignScript.Geometry;
 using Autodesk.DesignScript.Runtime;
+using System.Linq;
 
 namespace SampleLibraryZeroTouch
 {
@@ -44,11 +47,63 @@ namespace SampleLibraryZeroTouch
 
         }
 
-        public static Geometry[] InspectGeometry(Geometry[] geometries, string guid)
+        
+        public static IList InspectGeometry(IList geometries, string guid)
         {
-            Debug.WriteLine($"there were {geometries.Count()} geomery objects passed to this function");
+            var flattened = Flatten(geometries).Cast<object>().ToList();
+;            Debug.WriteLine($"there were {flattened.Count()} geomery objects passed to this function");
             Debug.WriteLine($"this node has id {guid}");
             return geometries;
         }
+
+
+        //BELOW CODE IS LIFTED FROM DYNAMO'S CORE LIST FLATTEN IMPLEMENTATION
+        //MAYBE DONT USE IT.
+
+        public static IList Flatten(IList list, int amt = -1)
+        {
+            if (amt < 0)
+            {
+                return Flatten(list, GetDepth(list), new List<object>());
+            }
+            return Flatten(list, amt, new List<object>());
+        }
+
+        private static int GetDepth(object list)
+        {
+            if (!(list is IList)) return 0;
+
+            int depth = 1;
+            foreach (var obj in (IList)list) // If it is a list, check if it contains a sublist
+            {
+                if (obj is IList) // If it contains a sublist
+                {
+                    int d = 1 + GetDepth((IList)obj);
+                    depth = (depth > d) ? depth : d; // Get the maximum depth among all items
+                }
+            }
+            return depth;
+        }
+
+        private static IList Flatten(IList list, int amt, IList acc)
+        {
+            if (amt == 0)
+            {
+                foreach (object item in list)
+                    acc.Add(item);
+            }
+            else
+            {
+                foreach (object item in list)
+                {
+                    if (item is IList)
+                        acc = Flatten(item as IList, amt - 1, acc);
+                    else
+                        acc.Add(item);
+                }
+            }
+            return acc;
+        }
+
     }
 }
