@@ -10,10 +10,7 @@ namespace SampleLibraryUI.Examples
     [NodeName("Drop Down Example")]
     [NodeDescription("An example drop down node.")]
     [IsDesignScriptCompatible]
-    [AlsoKnownAs(new string[]
-{
-    "SampleLibraryUIMigrationTesting.Examples.DropDownExample"
-})]
+    [AlsoKnownAs(new string[] { "SampleLibraryUIMigrationTesting.Examples.DropDownExample" })]
     public class NEWDropDownExample : DSDropDownBase
     {
         public NEWDropDownExample() : base("item"){}
