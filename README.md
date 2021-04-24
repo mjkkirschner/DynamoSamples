@@ -2,6 +2,11 @@
 
 ![Image](https://raw.github.com/ikeough/Dynamo/master/doc/distrib/Images/dynamo_logo_dark.png)
 
+# This branch!
+This branch contains a slimmed down and modified version of Dynamo samples with some changes made test node migration of CustomNodeModel and ZT nodes.
+
+
+--------
 # Dynamo Samples
 A collection of samples demonstrating how to develop libraries for Dynamo.
 

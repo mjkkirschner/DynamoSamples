@@ -5,7 +5,7 @@ using Autodesk.DesignScript.Geometry;
 using Autodesk.DesignScript.Interfaces;
 using Autodesk.DesignScript.Runtime;
 
-namespace Examples
+namespace SampleLibraryZeroTouchMigrationTesting.Examples
 {
     /// <summary>
     /// The HelloDynamoZeroTouch class demonstrates
@@ -13,7 +13,7 @@ namespace Examples
     /// which creates geometry, and exposes public 
     /// methods and properties as nodes.
     /// </summary>
-    public class BasicExample : IGraphicItem
+    public class NEWBasicExample : IGraphicItem
     {
          //OPTIONAL:
          //IGraphicItem is an interface which allows your
@@ -66,7 +66,7 @@ namespace Examples
         /// <param name="x">The x coordinate.</param>
         /// <param name="y">The y coordinate.</param>
         /// <param name="z">The z coordinate.</param>
-        private BasicExample(double x, double y, double z)
+        private NEWBasicExample(double x, double y, double z)
         {
             point = Point.ByCoordinates(x, y, z);
         }
@@ -83,7 +83,7 @@ namespace Examples
         /// <param name="y">The y coordinate of the point.</param>
         /// <param name="z">The z coordinate of the point.</param>
         /// <returns>A HelloDynamoZeroTouch object.</returns>
-        public static BasicExample Create(double x=42.0, double y=42.0, double z=42.0)
+        public static NEWBasicExample Create(double x=42.0, double y=42.0, double z=42.0)
         {
             // Let's say in our example that the user is not allowed
             // to create an instance of this class if any of the 
@@ -109,7 +109,7 @@ namespace Examples
                 throw new ArgumentException("z");
             }
 
-            return new BasicExample(x, y, z);
+            return new NEWBasicExample(x, y, z);
         }
 
         /// <summary>
@@ -119,9 +119,9 @@ namespace Examples
         /// </summary>
         /// <param name="point">A point.</param>
         /// <returns>A BasicExample object.</returns>
-        public static BasicExample Create([DefaultArgumentAttribute("Autodesk.DesignScript.Geometry.Point.ByCoordinates(5,5,5);")]Point point)
+        public static NEWBasicExample Create([DefaultArgumentAttribute("Autodesk.DesignScript.Geometry.Point.ByCoordinates(5,5,5);")]Point point)
         {
-            return new BasicExample(point.X, point.Y, point.Z);
+            return new NEWBasicExample(point.X, point.Y, point.Z);
         }
 
         /// <summary>
@@ -197,30 +197,5 @@ namespace Examples
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// By decorating a class with the 
-    /// IsVisibleInDynamoLibrary attribute, and setting
-    /// it to false, you are saying that you want this member
-    /// to be available to the VM, but not be visible in the
-    /// library view or search.
-    ///
-    /// By decorating a class with the SupressImportIntoVM
-    /// attribute, you are saying that you do not want to import
-    /// this class into Dynamo. BE CAREFUL! This class will then
-    /// be unavailable to others that might reference it. In most
-    /// cases, adding IsVisibleInDynamoLibrary(false) will suffice 
-    /// to hide your method from view without needing to disable
-    /// its import completely.
-    /// </summary>
-    [SupressImportIntoVM]
-    [IsVisibleInDynamoLibrary(false)]
-    public class DoesNotImportClass
-    {
-        /// <summary>
-        /// DoesNotImportClass constructor.
-        /// </summary>
-        public DoesNotImportClass(){}
     }
 }
